@@ -19,4 +19,4 @@ sudo ip address add 192.168.99.23/16 dev wlan0
 
 The way we send commands:
 
-echo <COMMAND> | socat - tcp:192.168.99.23:8080
+echo COMMAND | socat - tcp:192.168.99.23:8080
