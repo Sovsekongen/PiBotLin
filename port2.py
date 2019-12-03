@@ -2,7 +2,6 @@
 import time
 from gpiozero import CamJamKitRobot
 from gpiozero import DistanceSensor
-#import plot
 import socket
 from pid import Pid
 import threading
@@ -21,7 +20,7 @@ sock.listen(1)
 sensor = DistanceSensor(echo = echoPin, trigger = triggerPin)
 robot = CamJamKitRobot()
 sensor.distance
-stop_thread = False
+stop_thread = True
 
 pidController = Pid(1.5, 0.1, 1, 5)
 
@@ -34,9 +33,8 @@ def control():
 	left_0 = 0.3
 	right_0 = 0.29
 	last_avg = 0
-	distanceVal = []
-	leftMotorVal = []
-	rightMotorVal = []
+	next_last_avg = 0
+	current_avg = 0
 	global stop_thread
 
 	while(stop_thread == False):
@@ -46,21 +44,22 @@ def control():
 			sum += getDist()
 
 		avg =  sum / 100
-		if abs(last_avg - avg) > 30:
-			avg = 10
-		#If increasing -> closer to wall, if decreasing -> longer from wall
-		diff = reference - avg
-		print("current avg: {}".format(avg))
+		# if the angle is to big towards wall or away from the wall, the sensor will change to 100 and therefor this check, so
+		print(avg)
+		current_avg = avg
+		if avg == 100:
+			if last_avg-next_last_avg < 0:
+				current_avg = 10
+			else:
+				current_avg = 30
+		#If diffence bigger than 0 close to wall if away from wall smaller than 0
+		diff = reference - current_avg
 
-		#avg_diff = diff - last_diff
 		controlVal = pidController.p(diff)
 
-		#controlVal = controlVal
 		controlVal = controlVal / 100
-		print("ControlVal {}, Diff {}".format(controlVal, diff))
 		left = left_0 + (left_0 * controlVal)
-		right = right_0 - (right_0 * controlVal) #dette virker nogenlunde men kan tunes bedre, men mit gulv er lort
-		print("left {}, right {}".format(left, right))
+		right = right_0 - (right_0 * controlVal) 
 		if(right > 1):
 			right = 1
 		elif(right < -1):
@@ -72,20 +71,14 @@ def control():
 			left = 1
 		
 		run(-left, -right)
-		distanceVal.append(avg)
-		leftMotorVal.append(left)
-		rightMotorVal.append(right)
-		last_avg = avg
+		next_last_avg = last_avg
+		last_avg = current_avg
 		time.sleep(0.2)
 	# stop the motor		
 	leftmotorspeed = 0
 	rightmotorspeed = 0
 	motorforward = (leftmotorspeed, rightmotorspeed)
 	robot.value = motorforward
-
-#Robot is ready
-#def plotCall(distanceVal, leftMotorVal, rightMotorVal):
-	#plot.plotFunc(distanceVal, leftMotorVal, rightMotorVal)
 
 def run(right, left):
 	motorforward = (left, right)
@@ -97,9 +90,12 @@ def getDist():
 def start():
 	process = threading.Thread(target = control)
 	global stop_thread
-	stop_thread = False
-	# start wall following behavior
-	process.start()
+	if stop_thread == False:
+		print("already started")
+	else:	
+		stop_thread = False
+		# start wall following behavior
+		process.start()
 
 def stop():
 	global stop_thread
