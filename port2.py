@@ -127,7 +127,7 @@ while True:
 			returnVar = "Get Motors {}\n".format(getmotors())
 		elif command[0] == "run":
 			run(float(command[1]), float(command[2]))
-			returnVar = "run with left: {}, right: {}\n".format(command[1], command[2])
+			returnVar = "run with left: {}, right: {}\n".format(command[2], command[1])
 		else:
 			print("invalid input")
 
