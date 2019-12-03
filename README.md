@@ -1,5 +1,11 @@
 # PiBot Group 23
-For completing this project we developed three python scripts. One for controlling the robot, one for plotting the results and one for implementation of a PID-controller that controls the robot. Other than the four necessary commands we mainly use a fifth command namely run, that takes two paramers, one for each motor.
+For completing this project we developed three python scripts. One for controlling the robot and handling the tcp server, one for plotting the results and one for implementation of a PID-controller that controls the robot. Other than the four necessary commands we mainly use a fifth command namely run, that takes two paramers, one for each motor.
+You can send 5 commands to the server. 
+1. start (which starts following a wall at 20 centimeters)
+2. stop (stop the wall following behavior)
+3. getdist (get distance to the wall)
+4. getmoters (get the motor values)
+5. run(right, left) (set exact motor values)
 
 For controlling the robot a P-controller was implemented, which handles checking the distance to a reference of 20 centimeters. It was tuned by hand. The controller runs a python thread concurrent to the tcp server. We did this to make it possible to send other commands to the robot, while the control-part was running.
 
